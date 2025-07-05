@@ -21,6 +21,7 @@ model User {
   createdAt     DateTime @default(now())
   reportLost    Report[] @relation("LostBy")
   reportFound   Report[] @relation("FoundBy")
+  matchedReports Report[] @relation("MatchedTo")
   isActive      Boolean  @default(false) // Ajouté pour gérer la vérification OTP
 }
 
@@ -35,6 +36,8 @@ model Report {
   lng         Float
   createdBy   User         @relation("LostBy", fields: [createdById], references: [id])
   createdById String
+  foundBy     User?        @relation("FoundBy", fields: [foundById], references: [id])
+  foundById   String?
   matchedTo   User?        @relation("MatchedTo", fields: [matchedToId], references: [id])
   matchedToId String?
   validated   Boolean      @default(false)
