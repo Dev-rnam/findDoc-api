@@ -1,6 +1,7 @@
 // src/services/report.service.ts
-import { PrismaClient, Report, ReportType, Category } from '@prisma/client';
+import { PrismaClient} from '@prisma/client';
 import { findAndProcessMatch } from './matching.service';
+import { Category, ReportType } from '../utils/types';
 
 const prisma = new PrismaClient();
 

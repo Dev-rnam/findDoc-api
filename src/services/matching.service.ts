@@ -1,5 +1,6 @@
 // src/services/matching.service.ts
-import { PrismaClient, Report } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
+import { Report } from '../utils/types';
 
 const prisma = new PrismaClient();
 
@@ -32,7 +33,7 @@ export async function findAndProcessMatch(newReport: Report) {
   console.log(`[Matching Service] Match trouvé ! Rapport ${newReport.id} <=> ${bestMatch.id}`);
 
   // Mettre à jour les deux rapports dans une transaction
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // Mettre à jour le nouveau rapport
     await tx.report.update({
       where: { id: newReport.id },
