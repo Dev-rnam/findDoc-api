@@ -1,11 +1,12 @@
 // src/api/reports/report.controller.ts
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { createReportSchema } from './report.validation';
+import { createReportSchema, searchReportsSchema } from './report.validation';
 import * as reportService from '../../services/report.service';
-import type { ReportType as ReportTypeEnum } from '@prisma/client';
+import { ReportType } from '../../utils/types';
 
-async function handleCreateReport(req: Request, res: Response, type: ReportType) {
+
+async function handleCreateReport(req: Request, res: Response, type: ReportType): Promise<void> {
   try {
     const { body } = createReportSchema.parse(req);
     const userId = req.user!.id;
@@ -16,17 +17,40 @@ async function handleCreateReport(req: Request, res: Response, type: ReportType)
       type,
     });
 
-    return res.status(201).json(report);
+     res.status(201).json(report);
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ errors: error.errors });
+       res.status(400).json({ errors: error.errors });
     }
-    return res.status(500).json({ message: 'Erreur interne du serveur.' });
+     res.status(500).json({ message: 'Erreur interne du serveur.' });
   }
 }
 
-export const createLostReportHandler = (req: Request, res: Response) => 
-  handleCreateReport(req, res, ReportTypeEnum.LOST);
+export const createLostReportHandler = (req: Request, res: Response) : Promise<void> => 
+  handleCreateReport(req, res, ReportType.LOST);
 
 export const createFoundReportHandler = (req: Request, res: Response) => 
-  handleCreateReport(req, res, ReportTypeEnum.FOUND);
+  handleCreateReport(req, res, ReportType.FOUND);
+
+export async function validateReportHandler(req: Request, res: Response) {
+  try {
+    const { id } = req.params; 
+    const result = await reportService.validateFoundReport(id);
+    return res.status(200).json(result);
+  } catch (error: any) {
+    return res.status(400).json({ message: error.message });
+  }
+}
+
+export async function searchReportsHandler(req: Request, res: Response): Promise<void> {
+  try {
+    const { query } = searchReportsSchema.parse(req);
+    const result = await reportService.searchReports(query);
+     res.status(200).json(result);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+       res.status(400).json({ errors: error.errors });
+    }
+     res.status(500).json({ message: 'Erreur interne du serveur.' });
+  }
+}

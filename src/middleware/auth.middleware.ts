@@ -1,6 +1,8 @@
 // src/middleware/auth.middleware.ts
 import { Request, Response, NextFunction } from 'express';
 import { verify } from 'jsonwebtoken';
+import { UserRole } from '../utils/types';
+import { PrismaClient } from '@prisma/client';
 
 interface TokenPayload {
   userId: string;
@@ -14,33 +16,52 @@ declare global {
     interface Request {
       user?: {
         id: string;
+        role: UserRole; 
+        [key: string]: any;
       };
     }
   }
 }
 
-export function authenticate(req: Request, res: Response, next: NextFunction) {
+const prisma = new PrismaClient();
+
+export async function authenticate(req: Request, res: Response, next: NextFunction) : Promise<void> {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return res.status(401).json({ message: 'Aucun token fourni.' });
+     res.status(401).json({ message: 'Aucun token fourni.' });
   }
 
   // Le header est au format "Bearer <token>"
   const [, token] = authHeader.split(' ');
 
   if (!token) {
-    return res.status(401).json({ message: 'Format de token invalide.' });
+     res.status(401).json({ message: 'Format de token invalide.' });
   }
 
   try {
     const decoded = verify(token, process.env.JWT_ACCESS_SECRET!) as TokenPayload;
     
-    // Attacher l'id de l'utilisateur à la requête
-    req.user = { id: decoded.userId };
+    // Récupérer l'utilisateur complet pour avoir accès au rôle
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
     
-    return next(); // Passe au prochain handler/middleware
+    if (!user) {
+       res.status(401).json({ message: 'Utilisateur non trouvé.' });
+    }
+    
+    req.user = user; // Attacher l'objet utilisateur complet
+    return next();
   } catch (err) {
-    return res.status(401).json({ message: 'Token invalide ou expiré.' });
+     res.status(401).json({ message: 'Token invalide ou expiré.' });
   }
+}
+
+
+export function checkRole(roles: UserRole[])  {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Accès interdit. Rôle insuffisant.' });
+    }
+    next();
+  };
 }

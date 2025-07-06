@@ -14,7 +14,8 @@ model User {
   firstName     String?
   lastName      String?
   gender        String?
-  // GeoPoint est modélisé comme deux champs Float
+  role          UserRole @default(USER)
+  balance       Float    @default(0.0)
   lat           Float?
   lng           Float?
   points        Int      @default(0)
@@ -22,7 +23,8 @@ model User {
   reportLost    Report[] @relation("LostBy")
   reportFound   Report[] @relation("FoundBy")
   matchedReports Report[] @relation("MatchedTo")
-  isActive      Boolean  @default(false) // Ajouté pour gérer la vérification OTP
+  notifications Notification[]
+  isActive      Boolean  @default(false) 
 }
 
 model Report {
@@ -30,8 +32,7 @@ model Report {
   type        ReportType
   status      ReportStatus @default(PENDING)
   category    Category
-  data        Json // infos extraites ou saisies
-  // GeoPoint est modélisé comme deux champs Float
+  data        Json 
   lat         Float
   lng         Float
   createdBy   User         @relation("LostBy", fields: [createdById], references: [id])
@@ -42,6 +43,15 @@ model Report {
   matchedToId String?
   validated   Boolean      @default(false)
   createdAt   DateTime     @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  message   String
+  isRead    Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
 }
 
 enum ReportType {
@@ -59,4 +69,10 @@ enum Category {
   CNI
   PASSEPORT
   PERMIS_AUTRE
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  POLICE
 }

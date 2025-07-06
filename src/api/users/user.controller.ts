@@ -1,6 +1,9 @@
 // src/api/users/user.controller.ts
 import { Request, Response } from 'express';
 import * as userService from '../../services/user.service';
+import { z } from 'zod';
+import { updateUserSchema } from './user.validation';
+
 
 export async function getMeHandler(req: Request, res: Response) {
   try {
@@ -17,5 +20,21 @@ export async function getMeHandler(req: Request, res: Response) {
   } catch (error: any) {
     // Si l'utilisateur est supprimé après la validation du token, par exemple
     return res.status(404).json({ message: error.message });
+  }
+}
+
+export async function updateMeHandler(req: Request, res: Response) {
+  try {
+    const { body } = updateUserSchema.parse(req);
+    const userId = req.user!.id;
+
+    const updatedUser = await userService.updateUserProfile(userId, body);
+
+    return res.status(200).json(updatedUser);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ errors: error.errors });
+    }
+    return res.status(500).json({ message: 'Erreur interne du serveur.' });
   }
 }

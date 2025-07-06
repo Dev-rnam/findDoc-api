@@ -1,8 +1,11 @@
 // src/services/matching.service.ts
 import { PrismaClient, Prisma } from '@prisma/client';
-import { Report } from '../utils/types';
-
+import { Report, ReportFilters } from '../utils/types';
+import { getBoundingBox } from '../utils/geo';
+import { createNotification } from './notification.service';
+ 
 const prisma = new PrismaClient();
+const MATCHING_RADIUS_KM = 5;
 
 // Fonction principale qui sera appelée après la création d'un rapport
 export async function findAndProcessMatch(newReport: Report) {
@@ -11,14 +14,48 @@ export async function findAndProcessMatch(newReport: Report) {
   // Déterminer quel type de rapport chercher
   const targetType = newReport.type === 'LOST' ? 'FOUND' : 'LOST';
 
+  // 1. Calcul de la zone de recherche géographique
+  const { minLat, maxLat, minLng, maxLng } = getBoundingBox(
+    newReport.lat,
+    newReport.lng,
+    MATCHING_RADIUS_KM,
+  );
+
+  // 2. Définir les clés de données à comparer (ex: numéro de document, nom)
+  const dataKeysToMatch: string[] = ['documentNumber', 'lastName'];
+  const dataFilters: any[] = [];
+
+  const newReportData = newReport.data as Record<string, any>;
+
+  for (const key of dataKeysToMatch) {
+    if (newReportData && newReportData[key]) {
+      // Crée un filtre pour chercher un rapport où data[key] a la même valeur
+      dataFilters.push({
+        data: {
+          path: [key],
+          equals: newReportData[key],
+        },
+      });
+    }
+  }
   // Critères de recherche de base
+  // 3. Construire la requête de recherche avancée
   const potentialMatches = await prisma.report.findMany({
     where: {
-      type: targetType,          // Cherche le type opposé (LOST <-> FOUND)
-      status: 'PENDING',         // Uniquement les rapports non encore matchés
-      category: newReport.category, // Doit être de la même catégorie
-      // TODO: Ajouter une recherche plus fine sur le champ 'data' (numéro de document, nom...)
-      // TODO: Ajouter une recherche géographique (dans un rayon de X km)
+      // Critères de base
+      type: targetType,
+      status: 'PENDING',
+      category: newReport.category,
+
+      // Filtre géographique (Bounding Box)
+      AND: [
+        { lat: { gte: minLat, lte: maxLat } },
+        { lng: { gte: minLng, lte: maxLng } },
+      ],
+
+      // Filtre par données (si des données pertinentes existent)
+      // Si on a des filtres de données, on cherche un rapport qui correspond à AU MOINS UN d'entre eux.
+      OR: dataFilters.length > 0 ? dataFilters : undefined,
     },
   });
 
@@ -55,6 +92,14 @@ export async function findAndProcessMatch(newReport: Report) {
   });
 
   console.log(`[Matching Service] Rapports mis à jour avec le statut MATCHED.`);
+
+  const loser = await prisma.user.findUnique({ where: { id: newReport.type === 'LOST' ? newReport.createdById : bestMatch.createdById } });
+const finder = await prisma.user.findUnique({ where: { id: newReport.type === 'FOUND' ? newReport.createdById : bestMatch.createdById } });
+
+if (loser && finder) {
+  await createNotification(loser.id, `Bonne nouvelle ! Votre document a été retrouvé par ${finder.firstName}.`);
+  await createNotification(finder.id, `Merci ! Votre signalement a été mis en correspondance avec le document perdu par ${loser.firstName}.`);
+}
   // C'est ici qu'on déclencherait l'envoi de notifications (email, push)
   // await notificationService.notifyMatch(newReport.createdById, bestMatch.createdById);
 }

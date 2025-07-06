@@ -4,25 +4,25 @@ import * as authService from '../../services/auth.service';
 import { signupSchema, verifyOtpSchema, loginSchema } from './auth.validation';
 import { z } from 'zod';
 
-export async function signupHandler(req: Request, res: Response) {
+export async function signupHandler(req: Request, res: Response): Promise<void> {
   try {
     // Valider le corps de la requête avec Zod
     const { body } = signupSchema.parse(req);
 
     const result = await authService.signup(body);
 
-    return res.status(201).json(result);
+     res.status(201).json(result);
   } catch (error: any) {
     // Gérer les erreurs de validation de Zod
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ errors: error.errors });
+       res.status(400).json({ errors: error.errors });
     }
     // Gérer les autres erreurs (ex: email déjà utilisé)
-    return res.status(409).json({ message: error.message });
+     res.status(409).json({ message: error.message });
   }
 }
 
-export async function verifyOtpHandler(req: Request, res: Response) {
+export async function verifyOtpHandler(req: Request, res: Response): Promise<void> {
     try {
       const { body } = verifyOtpSchema.parse(req);
   
@@ -37,17 +37,17 @@ export async function verifyOtpHandler(req: Request, res: Response) {
       });
   
       // Envoyer l'access token dans le corps de la réponse
-      return res.status(200).json({ accessToken });
+       res.status(200).json({ accessToken });
   
     } catch (error: any) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ errors: error.errors });
+         res.status(400).json({ errors: error.errors });
       }
-      return res.status(400).json({ message: error.message });
+       res.status(400).json({ message: error.message });
     }
   }
 
-  export async function loginHandler(req: Request, res: Response) {
+  export async function loginHandler(req: Request, res: Response): Promise<void> {
     try {
       const { body } = loginSchema.parse(req);
   
@@ -60,13 +60,13 @@ export async function verifyOtpHandler(req: Request, res: Response) {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
       });
   
-      return res.status(200).json({ accessToken });
+       res.status(200).json({ accessToken });
   
     } catch (error: any) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ errors: error.errors });
+         res.status(400).json({ errors: error.errors });
       }
       // Pour le login, l'erreur est souvent une non-autorisation
-      return res.status(401).json({ message: error.message });
+       res.status(401).json({ message: error.message });
     }
   }

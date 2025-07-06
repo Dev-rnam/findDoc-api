@@ -2,6 +2,12 @@
 
 // Types basés sur le schéma Prisma
 
+ export enum UserRole {
+  USER = 'USER',
+  ADMIN = 'ADMIN',
+  POLICE = 'POLICE'
+}
+
 export enum ReportType {
   LOST = 'LOST',
   FOUND = 'FOUND'
