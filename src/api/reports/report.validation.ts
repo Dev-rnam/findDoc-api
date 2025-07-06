@@ -1,6 +1,6 @@
-// src/api/reports/report.validation.ts
+import { Category, ReportStatus, ReportType } from '@prisma/client';
 import { z } from 'zod';
-import { Category, ReportStatus, ReportType } from '../../utils/types';
+
 
 
 export const createReportSchema = z.object({

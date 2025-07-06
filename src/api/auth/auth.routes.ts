@@ -1,4 +1,3 @@
-// src/api/auth/auth.routes.ts
 import { Router } from 'express';
 import { loginHandler, signupHandler, verifyOtpHandler,  } from './auth.controller';
 

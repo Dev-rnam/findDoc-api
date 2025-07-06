@@ -1,7 +1,7 @@
 // src/services/report.service.ts
-import { PrismaClient, Prisma} from '@prisma/client';
+import { PrismaClient, Prisma, Category, ReportType, ReportStatus} from '@prisma/client';
 import { findAndProcessMatch } from './matching.service';
-import { Category, ReportStatus, ReportType } from '../utils/types';
+
 
 const prisma = new PrismaClient();
 
@@ -25,7 +25,7 @@ interface SearchFilters {
 
 const POINTS_PER_VALIDATION = 10;
 
-export async function createReport(data: CreateReportData): Promise<Report> {
+export async function createReport(data: CreateReportData) {
   const { type, category, lat, lng, userId, data: reportData } = data;
 
   const newReport = await prisma.report.create({
@@ -36,7 +36,7 @@ export async function createReport(data: CreateReportData): Promise<Report> {
       lng,
       createdById: userId,
       data: reportData || {},
-      status: 'PENDING', // Toujours en attente au début
+      status: 'PENDING', 
     },
   });
 

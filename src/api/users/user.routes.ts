@@ -1,4 +1,3 @@
-// src/api/users/user.routes.ts
 import { Router } from 'express';
 import { getMeHandler, updateMeHandler } from './user.controller';
 import { authenticate } from '../../middleware/auth.middleware';

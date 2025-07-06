@@ -1,4 +1,3 @@
-// src/api/auth/auth.controller.ts
 import { Request, Response } from 'express';
 import * as authService from '../../services/auth.service';
 import { signupSchema, verifyOtpSchema, loginSchema } from './auth.validation';

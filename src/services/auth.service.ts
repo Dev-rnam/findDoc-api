@@ -1,5 +1,4 @@
-// src/services/auth.service.ts
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient} from '@prisma/client';
 import { hash, compare } from 'bcryptjs';
 import { Resend } from 'resend';
 import crypto from 'crypto';
@@ -41,9 +40,8 @@ export async function signup(data: SignupData) {
 
   // 3. Générer un OTP (6 chiffres)
   const otpCode = crypto.randomInt(100000, 999999).toString();
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // Expire dans 5 minutes
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); 
 
-  // 4. Créer l'utilisateur et l'OTP dans une transaction
   // Si une opération échoue, tout est annulé.
   const user = await prisma.user.create({
     data: {
@@ -52,7 +50,7 @@ export async function signup(data: SignupData) {
       lastName,
       firstName,
       gender,
-      isActive: false, // Le compte n'est pas actif avant la vérification OTP
+      isActive: false, 
     },
   });
 
@@ -94,19 +92,18 @@ export async function verifyOtp(data: VerifyOtpData) {
     });
   
     // 2. Vérifications de sécurité
-    if (!user || !user.otp) {
+    if (!user || !user.otp || user.otp.length === 0) {
       throw new Error("Utilisateur non trouvé ou aucune vérification en attente.");
     }
-    if (user.otp.code !== otpCode) {
+    if (user.otp[0].code !== otpCode) {
       throw new Error("Code OTP invalide.");
     }
-    if (user.otp.expiresAt < new Date()) {
-      // On pourrait ici supprimer l'OTP expiré et proposer d'en renvoyer un autre
+    if (user.otp[0].expiresAt < new Date()) {
       throw new Error("Le code OTP a expiré.");
     }
   
     // 3. Mettre à jour l'utilisateur et supprimer l'OTP (transaction)
-    await prisma.$transaction(async (tx: PrismaClient) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Activer le compte utilisateur
       await tx.user.update({
         where: { id: user.id },
@@ -114,7 +111,7 @@ export async function verifyOtp(data: VerifyOtpData) {
       });
       // Supprimer l'OTP pour qu'il ne soit pas réutilisé
       await tx.otp.delete({
-        where: { id: user.otp!.id },
+        where: { id: user.otp[0].id },
       });
     });
   

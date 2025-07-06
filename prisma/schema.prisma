@@ -8,23 +8,33 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  passwordHash  String
-  firstName     String?
-  lastName      String?
-  gender        String?
-  role          UserRole @default(USER)
-  balance       Float    @default(0.0)
-  lat           Float?
-  lng           Float?
-  points        Int      @default(0)
-  createdAt     DateTime @default(now())
-  reportLost    Report[] @relation("LostBy")
-  reportFound   Report[] @relation("FoundBy")
-  matchedReports Report[] @relation("MatchedTo")
-  notifications Notification[]
-  isActive      Boolean  @default(false) 
+  id             String         @id @default(uuid())
+  email          String         @unique
+  passwordHash   String
+  firstName      String?
+  lastName       String?
+  gender         String?
+  role           UserRole       @default(USER)
+  balance        Float          @default(0.0)
+  lat            Float?
+  lng            Float?
+  points         Int            @default(0)
+  createdAt      DateTime       @default(now())
+  reportLost     Report[]       @relation("LostBy")
+  reportFound    Report[]       @relation("FoundBy")
+  matchedReports Report[]       @relation("MatchedTo")
+  notifications  Notification[]
+  otp            Otp[]
+  isActive       Boolean        @default(false)
+}
+
+model Otp {
+  id        String   @id @default(uuid())
+  code      String
+  expiresAt DateTime
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model Report {
@@ -32,7 +42,7 @@ model Report {
   type        ReportType
   status      ReportStatus @default(PENDING)
   category    Category
-  data        Json 
+  data        Json
   lat         Float
   lng         Float
   createdBy   User         @relation("LostBy", fields: [createdById], references: [id])

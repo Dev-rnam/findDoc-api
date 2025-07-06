@@ -1,4 +1,3 @@
-// src/utils/geo.ts
 
 /**
  * Calcule la zone de délimitation (bounding box) autour d'un point GPS.

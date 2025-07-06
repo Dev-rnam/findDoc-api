@@ -1,6 +1,4 @@
-// src/services/matching.service.ts
-import { PrismaClient, Prisma } from '@prisma/client';
-import { Report, ReportFilters } from '../utils/types';
+import { PrismaClient, Prisma, Report } from '@prisma/client';
 import { getBoundingBox } from '../utils/geo';
 import { createNotification } from './notification.service';
  

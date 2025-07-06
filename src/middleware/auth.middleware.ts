@@ -1,8 +1,6 @@
-// src/middleware/auth.middleware.ts
 import { Request, Response, NextFunction } from 'express';
 import { verify } from 'jsonwebtoken';
-import { UserRole } from '../utils/types';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 
 interface TokenPayload {
   userId: string;
@@ -16,7 +14,7 @@ declare global {
     interface Request {
       user?: {
         id: string;
-        role: UserRole; 
+        role: string; 
         [key: string]: any;
       };
     }
@@ -30,6 +28,7 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
 
   if (!authHeader) {
      res.status(401).json({ message: 'Aucun token fourni.' });
+     return;
   }
 
   // Le header est au format "Bearer <token>"
@@ -47,9 +46,10 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
     
     if (!user) {
        res.status(401).json({ message: 'Utilisateur non trouvé.' });
+       return;
     }
     
-    req.user = user; // Attacher l'objet utilisateur complet
+    req.user = user; 
     return next();
   } catch (err) {
      res.status(401).json({ message: 'Token invalide ou expiré.' });
@@ -57,10 +57,11 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
 }
 
 
-export function checkRole(roles: UserRole[])  {
+export function checkRole(roles: UserRole[]) {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Accès interdit. Rôle insuffisant.' });
+    if (!req.user || !roles.includes(req.user.role as UserRole)) {
+      res.status(403).json({ message: 'Accès interdit. Rôle insuffisant.' });
+      return;
     }
     next();
   };
