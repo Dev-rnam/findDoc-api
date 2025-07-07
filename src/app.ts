@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import authRouter from './api/auth/auth.routes';
 import userRouter from './api/users/user.routes'; 
 import reportRouter from './api/reports/report.routes';
+import pointsRouter from './api/points/point.routes';
 
 // Configure les variables d'environnement
 dotenv.config();
@@ -21,6 +22,7 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api/reports', reportRouter);
+app.use('/api/points', pointsRouter);
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {

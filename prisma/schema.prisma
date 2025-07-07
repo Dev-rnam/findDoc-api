@@ -24,6 +24,7 @@ model User {
   reportFound    Report[]       @relation("FoundBy")
   matchedReports Report[]       @relation("MatchedTo")
   notifications  Notification[]
+  conversions   Conversion[]    @relation("Point")
   otp            Otp[]
   isActive       Boolean        @default(false)
 }
@@ -62,6 +63,15 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id])
   userId    String
   createdAt DateTime @default(now())
+}
+
+model Conversion {
+  id              String   @id @default(uuid())
+  pointsConverted Int
+  moneyGained     Float
+  user            User     @relation("Point", fields: [userId], references: [id])
+  userId          String
+  createdAt       DateTime @default(now())
 }
 
 enum ReportType {

@@ -1,10 +1,10 @@
 import request from 'supertest';
 import app from '../src/app';
 
-describe('Auth API', () => {
+describe('POST /api/auth/signup', () => {
   const testUser = {
     email: `testuser_${Date.now()}@example.com`,
-    password: 'TestPassword123',
+    password: 'TestPassword123', 
     firstName: 'Test',
     lastName: 'User',
     gender: 'M',
