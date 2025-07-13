@@ -15,7 +15,7 @@ router.post('/lost', createLostReportHandler);
 
 router.post('/found', createFoundReportHandler);
 
-router.post(
+router.patch(
     '/:id/validate',
     checkRole([UserRole.ADMIN, UserRole.POLICE]),
     validateReportHandler

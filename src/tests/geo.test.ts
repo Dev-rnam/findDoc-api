@@ -1,4 +1,4 @@
-import { getBoundingBox } from "../src/utils/geo";
+import { getBoundingBox } from "../utils/geo";
 
 
 describe('Fonction getBoundingBox', () => {

@@ -5,11 +5,12 @@ import userRouter from './api/users/user.routes';
 import reportRouter from './api/reports/report.routes';
 import pointsRouter from './api/points/point.routes';
 
+
 // Configure les variables d'environnement
 dotenv.config();
-
+ 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 
 // Middleware pour parser le JSON des requêtes
 app.use(express.json());

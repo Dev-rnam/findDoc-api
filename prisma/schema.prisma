@@ -21,7 +21,6 @@ model User {
   points         Int            @default(0)
   createdAt      DateTime       @default(now())
   reportLost     Report[]       @relation("LostBy")
-  reportFound    Report[]       @relation("FoundBy")
   matchedReports Report[]       @relation("MatchedTo")
   notifications  Notification[]
   conversions   Conversion[]    @relation("Point")
@@ -48,8 +47,6 @@ model Report {
   lng         Float
   createdBy   User         @relation("LostBy", fields: [createdById], references: [id])
   createdById String
-  foundBy     User?        @relation("FoundBy", fields: [foundById], references: [id])
-  foundById   String?
   matchedTo   User?        @relation("MatchedTo", fields: [matchedToId], references: [id])
   matchedToId String?
   validated   Boolean      @default(false)

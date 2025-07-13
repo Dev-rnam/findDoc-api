@@ -1,10 +1,10 @@
-{
+ {
   "name": "finddoc-api",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest  --testMatch='**/**/*.test.ts'",
     "test:integration": "dotenv -e .env.test -- npx prisma migrate reset --force && jest --testMatch='**/**/*.integration.test.ts'"
   },
   "keywords": [],
@@ -26,10 +26,12 @@
   },
   "dependencies": {
     "@prisma/client": "^6.11.1",
+    "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "react-native-dotenv": "^3.4.11",
     "resend": "^4.6.0",
     "zod": "^3.25.71"
   }

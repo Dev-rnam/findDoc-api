@@ -69,3 +69,19 @@ export async function verifyOtpHandler(req: Request, res: Response): Promise<voi
        res.status(401).json({ message: error.message });
     }
   }
+
+  export async function refreshTokenHandler(req: Request, res: Response): Promise<void> {
+    try {
+      const { refreshToken } = req.body;
+      
+      if (!refreshToken) {
+        res.status(400).json({ message: 'Refresh token requis' });
+        return;
+      }
+  
+      const result = await authService.refreshToken(refreshToken);
+      res.status(200).json(result);
+    } catch (error: any) {
+      res.status(401).json({ message: error.message });
+    }
+  }

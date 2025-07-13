@@ -2,7 +2,8 @@ import { Prisma, PrismaClient} from '@prisma/client';
 import { hash, compare } from 'bcryptjs';
 import { Resend } from 'resend';
 import crypto from 'crypto';
-import { sign } from 'jsonwebtoken';
+import jwt, { sign } from 'jsonwebtoken';
+
 
 
 const prisma = new PrismaClient();
@@ -158,4 +159,29 @@ export async function verifyOtp(data: VerifyOtpData) {
   
     return { accessToken, refreshToken };
 
+}
+
+export async function refreshToken(refreshToken: string) {
+  try {
+    // Vérifier le refresh token
+    const payload: any = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!);
+    
+    // Vérifier si l'utilisateur existe toujours
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+    if (!user) {
+      throw new Error("Utilisateur non trouvé");
+    }
+
+    // Générer un nouvel access token
+    const accessToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_ACCESS_SECRET!,
+      { expiresIn: '15m' }
+    );
+
+    return { accessToken };
+  } catch (error) {
+    console.error("Erreur lors du rafraîchissement du token:", error);
+    throw new Error("Refresh token invalide ou expiré");
+  }
 }
